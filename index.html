@@ -12,6 +12,7 @@
     --text-primary: #1a2340; --text-secondary: #5a6585; --text-muted: #8a93b0;
     --event-google: #4f8ef7; --event-hangout: #e05a7a;
     --event-birthday: #f7a94f; --event-anniversary: #a47fe8;
+    --event-holiday: #f59e0b;
     --sidebar-w: 320px; --header-h: 64px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -120,6 +121,7 @@
   .event-pip { font-size: 10.5px; padding: 1px 5px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: white; font-weight: 500; line-height: 16px; cursor: pointer; }
   .pip-google { background: var(--event-google); }
   .pip-hangout { background: var(--event-hangout); }
+  .pip-holiday { background: var(--event-holiday); color: #3a2000; }
   .pip-birthday { background: var(--event-birthday); color: #3a2000; }
   .pip-anniversary { background: var(--event-anniversary); }
   .pip-default { background: var(--text-muted); }
@@ -145,6 +147,7 @@
   .event-card.google { border-left-color: var(--event-google); }
   .event-card.hangout { border-left-color: var(--event-hangout); }
   .event-card.plans { border-left-color: var(--accent); }
+  .event-card.holiday { border-left-color: var(--event-holiday); }
   .event-card.birthday { border-left-color: var(--event-birthday); }
   .event-card.anniversary { border-left-color: var(--event-anniversary); }
   .event-time { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px; }
@@ -155,6 +158,7 @@
   .tag-google { background: rgba(79,142,247,0.18); color: #6aa3f9; }
   .tag-hangout { background: rgba(224,90,122,0.18); color: #e87090; }
   .tag-plans { background: rgba(79,142,247,0.18); color: #4f8ef7; }
+  .tag-holiday { background: rgba(245,158,11,0.18); color: #d97706; }
   .tag-birthday { background: rgba(247,169,79,0.18); color: #f7b86a; }
   .tag-anniversary { background: rgba(164,127,232,0.18); color: #b89ae8; }
   .no-events { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; }
@@ -255,6 +259,7 @@
       <div class="legend-item"><div class="legend-dot" style="background:var(--event-hangout)"></div>Hangout</div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--event-birthday)"></div>Birthday</div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--event-anniversary)"></div>Anniversary</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--event-holiday)"></div>Holiday</div>
     </div>
     <div class="sidebar-events" id="sidebarEvents"></div>
   </div>
@@ -339,10 +344,10 @@ function toKey(d) {
 }
 function todayKey() { return toKey(today); }
 function fmtMonthYear(y, m) { return new Date(y, m, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); }
-function pipClass(t) { return t==='birthday'?'pip-birthday':t==='anniversary'?'pip-anniversary':t==='google'?'pip-google':t==='hangout'||t==='plans'?'pip-hangout':'pip-default'; }
+function pipClass(t) { return t==='birthday'?'pip-birthday':t==='anniversary'?'pip-anniversary':t==='google'?'pip-google':t==='holiday'?'pip-holiday':t==='hangout'||t==='plans'?'pip-hangout':'pip-default'; }
 function cardClass(t) { return t||'hangout'; }
 function tagClass(t) { return `tag-${t||'google'}`; }
-function tagLabel(t) { return {google:'Google Cal',hangout:'Hangout 🎉',plans:'Plans 🗓️',birthday:'Birthday 🎂',anniversary:'Anniversary 💝'}[t]||t; }
+function tagLabel(t) { return {google:'Google Cal',hangout:'Hangout 🎉',plans:'Plans 🗓️',birthday:'Birthday 🎂',anniversary:'Anniversary 💝',holiday:'US Holiday 🇺🇸'}[t]||t; }
 function linkify(x) { return x?x.replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>'):''; }
 function setStatus(m, s='ok') {
   document.getElementById('statusText').textContent = m;
@@ -611,7 +616,8 @@ async function fetchFirebase() {
       const data = d.data();
       const mo = String(data.month).padStart(2,'0'), da = String(data.day).padStart(2,'0');
       const years = data.recurring ? [today.getFullYear()-1, today.getFullYear(), today.getFullYear()+1] : [data.year||today.getFullYear()];
-      for (const y of years) evts.push({ date:`${y}-${mo}-${da}`, title:data.title||data.name||'Event', type:data.type||'hangout', time:data.time||null, desc:data.description||data.notes||'', source:'firebase' });
+      const evtType = data.isHoliday ? 'holiday' : (data.type||'hangout');
+      for (const y of years) evts.push({ date:`${y}-${mo}-${da}`, title:data.title||data.name||'Event', type:evtType, time:data.time||null, desc:data.description||data.notes||'', source:'firebase' });
     });
   } catch(e) { console.error('[Firebase]', e); }
   return evts;
