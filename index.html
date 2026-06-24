@@ -10,7 +10,7 @@
     --navy-border: #2e3f6e; --accent: #4f8ef7; --accent-soft: #3a6fd4;
     --today-ring: #f7c94f; --white: #ffffff; --off-white: #f7f8fc;
     --text-primary: #1a2340; --text-secondary: #5a6585; --text-muted: #8a93b0;
-    --event-google: #4f8ef7; --event-family: #e05a7a;
+    --event-google: #4f8ef7; --event-hangout: #e05a7a;
     --event-birthday: #f7a94f; --event-anniversary: #a47fe8;
     --sidebar-w: 320px; --header-h: 64px;
   }
@@ -117,7 +117,7 @@
   .day-cell.selected .day-number { background: var(--accent); color: var(--white); }
   .event-pip { font-size: 10.5px; padding: 1px 5px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: white; font-weight: 500; line-height: 16px; cursor: pointer; }
   .pip-google { background: var(--event-google); }
-  .pip-family { background: var(--event-family); }
+  .pip-hangout { background: var(--event-hangout); }
   .pip-birthday { background: var(--event-birthday); color: #3a2000; }
   .pip-anniversary { background: var(--event-anniversary); }
   .pip-default { background: var(--text-muted); }
@@ -138,7 +138,8 @@
   .event-card { background: var(--navy-mid); border: 1px solid var(--navy-border); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; border-left: 3px solid var(--accent); transition: background 0.15s; }
   .event-card:hover { background: var(--navy-light); }
   .event-card.google { border-left-color: var(--event-google); }
-  .event-card.family { border-left-color: var(--event-family); }
+  .event-card.hangout { border-left-color: var(--event-hangout); }
+  .event-card.plans { border-left-color: var(--accent); }
   .event-card.birthday { border-left-color: var(--event-birthday); }
   .event-card.anniversary { border-left-color: var(--event-anniversary); }
   .event-time { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px; }
@@ -147,7 +148,8 @@
   .event-desc a { color: var(--accent); text-decoration: none; }
   .event-source-tag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 3px; margin-top: 6px; font-weight: 600; letter-spacing: 0.3px; }
   .tag-google { background: rgba(79,142,247,0.18); color: #6aa3f9; }
-  .tag-family { background: rgba(224,90,122,0.18); color: #e87090; }
+  .tag-hangout { background: rgba(224,90,122,0.18); color: #e87090; }
+  .tag-plans { background: rgba(79,142,247,0.18); color: #4f8ef7; }
   .tag-birthday { background: rgba(247,169,79,0.18); color: #f7b86a; }
   .tag-anniversary { background: rgba(164,127,232,0.18); color: #b89ae8; }
   .no-events { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; }
@@ -190,8 +192,8 @@
 <div id="gate">
   <div class="gate-card">
     <div class="gate-logo">📅</div>
-    <div class="gate-title">Sara's Calendar</div>
-    <div class="gate-sub">Family calendar — members only.<br>Enter your email to request access or use an invite link.</div>
+    <div class="gate-title">Sara's Calendar 📅</div>
+    <div class="gate-sub">Friends-only calendar.<br>Enter your email for a login link, or open a shared invite link to join.<br>Enter your email to request access or use an invite link.</div>
     <input class="gate-input" id="gate-email" type="email" placeholder="your@email.com" autocomplete="email">
     <button class="gate-btn" id="gate-btn">Send me a magic link</button>
     <div class="gate-msg" id="gate-msg"></div>
@@ -206,9 +208,8 @@
 
 <!-- ── Invite Panel (owner only) ── -->
 <div class="invite-panel hidden" id="invite-panel">
-  <label>Invite:</label>
-  <input class="invite-input" id="invite-email" type="email" placeholder="friend@email.com">
-  <button class="invite-send-btn" id="invite-send-btn">Send Invite</button>
+  <label>📎 Share invite link:</label>
+  <button class="invite-send-btn" id="invite-send-btn">Generate &amp; Copy Link</button>
   <span class="invite-msg" id="invite-msg"></span>
 </div>
 
@@ -245,7 +246,7 @@
     </div>
     <div class="sidebar-legend">
       <div class="legend-item"><div class="legend-dot" style="background:var(--event-google)"></div>Google</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--event-family)"></div>Family</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--event-hangout)"></div>Hangout</div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--event-birthday)"></div>Birthday</div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--event-anniversary)"></div>Anniversary</div>
     </div>
@@ -267,7 +268,8 @@
     <div class="form-group"><label>Time (optional)</label><input type="time" id="evtTime"></div>
     <div class="form-group"><label>Type</label>
       <select id="evtType">
-        <option value="family">Family Event</option>
+        <option value="hangout">Hangout 🎉</option>
+        <option value="plans">Plans 🗓️</option>
         <option value="birthday">Birthday</option>
         <option value="anniversary">Anniversary</option>
       </select>
@@ -290,7 +292,7 @@ const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyDLl9RbMyu_-QK78f0x6HP3AdQcKThFQgU",
   authDomain:        "parbtani-khandan-calenda-9e7dd.firebaseapp.com",
   projectId:         "parbtani-khandan-calenda-9e7dd",
-  storageBucket:     "parbtani-khandan-calenda-9e7dd.appspot.com",
+  storageBucket:     "parbtani-khandan-calenda-9e7dd.firebasestorage.app",
   messagingSenderId: "984569082803",
   appId:             "1:984569082803:web:72f6b7b2f9d054537bd1c6"
 };
@@ -330,10 +332,10 @@ function toKey(d) {
 }
 function todayKey() { return toKey(today); }
 function fmtMonthYear(y, m) { return new Date(y, m, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); }
-function pipClass(t) { return t==='birthday'?'pip-birthday':t==='anniversary'?'pip-anniversary':t==='google'?'pip-google':t==='family'?'pip-family':'pip-default'; }
-function cardClass(t) { return t||'google'; }
+function pipClass(t) { return t==='birthday'?'pip-birthday':t==='anniversary'?'pip-anniversary':t==='google'?'pip-google':t==='hangout'||t==='plans'?'pip-hangout':'pip-default'; }
+function cardClass(t) { return t||'hangout'; }
 function tagClass(t) { return `tag-${t||'google'}`; }
-function tagLabel(t) { return {google:'Google Cal',family:'Family',birthday:'Birthday 🎂',anniversary:'Anniversary 💝'}[t]||t; }
+function tagLabel(t) { return {google:'Google Cal',hangout:'Hangout 🎉',plans:'Plans 🗓️',birthday:'Birthday 🎂',anniversary:'Anniversary 💝'}[t]||t; }
 function linkify(x) { return x?x.replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>'):''; }
 function setStatus(m, s='ok') {
   document.getElementById('statusText').textContent = m;
@@ -366,13 +368,36 @@ async function verifySession(session) {
 async function acceptInvite(token) {
   if (!USE_FIREBASE) return false;
   try {
-    const q = query(collection(db, 'invites'), where('token', '==', token), where('used', '==', false));
-    const snap = await getDocs(q);
-    if (snap.empty) return false;
-    const invDoc = snap.docs[0];
-    const email = invDoc.data().email;
+    // Check by token field (reusable or single-use)
+    const invRef = doc(db, 'invites', token);
+    const invSnap = await getDoc(invRef);
+    if (!invSnap.exists()) {
+      // Fallback: query by token field
+      const q = query(collection(db, 'invites'), where('token', '==', token));
+      const snap = await getDocs(q);
+      if (snap.empty) return false;
+    }
+    const invData = invSnap.exists() ? invSnap.data() : null;
+    if (!invData) return false;
+
+    // If single-use and already used, reject
+    if (!invData.reusable && invData.used) return false;
+
+    // Prompt for email if reusable link (no email attached)
+    let email = invData.email;
+    if (!email) {
+      email = prompt('Enter your email to join Sara\'s Calendar:')?.trim().toLowerCase();
+      if (!email || !email.includes('@')) return false;
+    }
+
+    // Add as member
     await setDoc(doc(db, 'members', email), { email, joinedAt: new Date().toISOString(), role: 'member' });
-    await setDoc(doc(db, 'invites', invDoc.id), { ...invDoc.data(), used: true, usedAt: new Date().toISOString() });
+
+    // Mark single-use as used
+    if (!invData.reusable) {
+      await setDoc(invRef, { ...invData, used: true, usedAt: new Date().toISOString() });
+    }
+
     saveSession(email, token);
     return { email };
   } catch (e) { console.error('[acceptInvite]', e); return false; }
@@ -398,17 +423,17 @@ async function sendMagicLink(email, type) {
   const token = genToken();
   const link  = `${SITE_URL}?${type}=${token}`;
   const subject = type === 'invite'
-    ? "You're invited to Sara's Family Calendar 📅"
+    ? "You're invited to Sara's Calendar 📅"
     : "Your magic link to Sara's Calendar 📅";
   const message = type === 'invite'
-    ? `You've been invited to join Sara's family calendar! Click the link below to accept:\n\n${link}\n\nThis link works once.`
+    ? `You've been invited to join Sara's Calendar! Click the link below to accept:\n\n${link}\n\nThis link works once.`
     : `Here's your magic link to access Sara's Calendar:\n\n${link}\n\nThis link works once and expires when used.`;
 
   if (USE_FIREBASE) {
     const col = type === 'invite' ? 'invites' : 'login_tokens';
     await setDoc(doc(db, col, token), {
       email, token, createdAt: new Date().toISOString(),
-      used: false, ...(type === 'invite' ? { invitedBy: OWNER_EMAIL } : {})
+      used: false, ...(type === 'invite' ? { invitedBy: currentUser.email } : {})
     });
   }
 
@@ -470,7 +495,7 @@ document.getElementById('gate-email').addEventListener('keydown', e => {
 // ── Leave Calendar ──
 document.getElementById('leave-btn').addEventListener('click', async () => {
   if (!currentUser) return;
-  if (!confirm(`Leave Sara's Calendar? You'll need a new invite link to rejoin.`)) return;
+  if (!confirm(`Leave Sara's Calendar? You'll need a new invite to rejoin.`)) return;
   if (USE_FIREBASE && currentUser.email !== OWNER_EMAIL) {
     try { await deleteDoc(doc(db, 'members', currentUser.email)); } catch {}
   }
@@ -480,20 +505,36 @@ document.getElementById('leave-btn').addEventListener('click', async () => {
 
 // ── Invite Panel ──
 document.getElementById('invite-send-btn').addEventListener('click', async () => {
-  const email = document.getElementById('invite-email').value.trim().toLowerCase();
   const msgEl = document.getElementById('invite-msg');
-  if (!email || !email.includes('@')) { msgEl.textContent = 'Enter a valid email.'; msgEl.className = 'invite-msg error'; return; }
-  msgEl.textContent = 'Sending…'; msgEl.className = 'invite-msg';
-  const { sent, link } = await sendMagicLink(email, 'invite');
-  document.getElementById('invite-email').value = '';
-  if (sent) {
-    msgEl.textContent = `✓ Invite sent to ${email}`;
-  } else {
-    msgEl.textContent = `✓ Link in console for ${email}`;
-    setStatus(`Invite link for ${email}: ${link}`);
+  msgEl.textContent = 'Generating…'; msgEl.className = 'invite-msg info';
+
+  if (!USE_FIREBASE) {
+    msgEl.textContent = 'Firebase not configured yet.'; msgEl.className = 'invite-msg error'; return;
   }
-  msgEl.className = 'invite-msg ok';
-  setTimeout(() => { msgEl.textContent = ''; }, 6000);
+
+  // Generate a reusable invite link (not tied to an email — anyone with the link can join)
+  const token = genToken();
+  const link = `${SITE_URL}?invite=${token}`;
+
+  try {
+    await setDoc(doc(db, 'invites', token), {
+      token, createdAt: new Date().toISOString(), used: false,
+      createdBy: currentUser.email, reusable: true
+    });
+
+    // Copy to clipboard
+    try { await navigator.clipboard.writeText(link); } catch {}
+
+    msgEl.textContent = '✓ Invite link copied to clipboard!';
+    msgEl.className = 'invite-msg ok';
+    setStatus(`Invite link: ${link}`);
+    console.log('%c[Invite Link]\n' + link, 'color:#4f8ef7;font-size:13px');
+  } catch (e) {
+    msgEl.textContent = 'Error: ' + e.message;
+    msgEl.className = 'invite-msg error';
+    console.error('[invite]', e);
+  }
+  setTimeout(() => { msgEl.textContent = ''; }, 8000);
 });
 
 // ── Init: check URL tokens and session ──
@@ -535,11 +576,11 @@ async function init() {
   // Logged in
   hideGate();
 
-  if (currentUser.isOwner) {
-    document.getElementById('invite-panel').classList.remove('hidden');
-  } else {
+  // All logged-in members see invite panel + access banner
+  document.getElementById('invite-panel').classList.remove('hidden');
+  if (!currentUser.isOwner) {
     document.getElementById('access-banner').classList.remove('hidden');
-    document.getElementById('access-label').textContent = `📅 Logged in as ${currentUser.email}`;
+    document.getElementById('access-label').textContent = `📅 ${currentUser.email}`;
   }
 
   renderGrid();
@@ -553,12 +594,12 @@ async function fetchFirebase() {
   if (!USE_FIREBASE) return [];
   const evts = [];
   try {
-    const snap = await getDocs(collection(db, 'family-events'));
+    const snap = await getDocs(collection(db,'sara-events'));
     snap.forEach(d => {
       const data = d.data();
       const mo = String(data.month).padStart(2,'0'), da = String(data.day).padStart(2,'0');
       const years = data.recurring ? [today.getFullYear()-1, today.getFullYear(), today.getFullYear()+1] : [data.year||today.getFullYear()];
-      for (const y of years) evts.push({ date:`${y}-${mo}-${da}`, title:data.title||data.name||'Event', type:data.type||'family', time:data.time||null, desc:data.description||data.notes||'', source:'firebase' });
+      for (const y of years) evts.push({ date:`${y}-${mo}-${da}`, title:data.title||data.name||'Event', type:data.type||'hangout', time:data.time||null, desc:data.description||data.notes||'', source:'firebase' });
     });
   } catch(e) { console.error('[Firebase]', e); }
   return evts;
@@ -654,7 +695,7 @@ async function saveEvent() {
   const [yr,mo,da]=date.split('-').map(Number), type=document.getElementById('evtType').value,
         time=document.getElementById('evtTime').value||null, notes=document.getElementById('evtNotes').value.trim();
   if (USE_FIREBASE) {
-    try { await addDoc(collection(db,'family-events'),{title,type,day:da,month:mo,year:yr,time:time||null,description:notes,recurring:(type==='birthday'||type==='anniversary')}); } catch(e){console.error('[FB save]',e);}
+    try { await addDoc(collection(db,'sara-events'),{title,type,day:da,month:mo,year:yr,time:time||null,description:notes,recurring:(type==='birthday'||type==='anniversary')}); } catch(e){console.error('[FB save]',e);}
   }
   allEvents.push({date,title,type,time,desc:notes,source:'firebase'});
   allEvents.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
