@@ -6,494 +6,174 @@
 <title>Sara's Calendar</title>
 <style>
   :root {
-    --navy: #1a2340;
-    --navy-mid: #1e2a4a;
-    --navy-light: #253358;
-    --navy-border: #2e3f6e;
-    --accent: #4f8ef7;
-    --accent-soft: #3a6fd4;
-    --today-ring: #f7c94f;
-    --white: #ffffff;
-    --off-white: #f7f8fc;
-    --text-primary: #1a2340;
-    --text-secondary: #5a6585;
-    --text-muted: #8a93b0;
-    --event-google: #4f8ef7;
-    --event-family: #e05a7a;
-    --event-birthday: #f7a94f;
-    --event-anniversary: #a47fe8;
-    --sidebar-w: 320px;
-    --header-h: 64px;
+    --navy: #1a2340; --navy-mid: #1e2a4a; --navy-light: #253358;
+    --navy-border: #2e3f6e; --accent: #4f8ef7; --accent-soft: #3a6fd4;
+    --today-ring: #f7c94f; --white: #ffffff; --off-white: #f7f8fc;
+    --text-primary: #1a2340; --text-secondary: #5a6585; --text-muted: #8a93b0;
+    --event-google: #4f8ef7; --event-family: #e05a7a;
+    --event-birthday: #f7a94f; --event-anniversary: #a47fe8;
+    --sidebar-w: 320px; --header-h: 64px;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--off-white); color: var(--text-primary); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--off-white);
-    color: var(--text-primary);
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+  /* ── Access Gate ── */
+  #gate {
+    position: fixed; inset: 0; background: var(--navy);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200; flex-direction: column; gap: 0;
   }
+  #gate.hidden { display: none; }
+  .gate-card {
+    background: var(--navy-mid); border: 1px solid var(--navy-border);
+    border-radius: 20px; padding: 40px 44px; width: 420px; max-width: 92vw;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+  }
+  .gate-logo { font-size: 36px; margin-bottom: 12px; }
+  .gate-title { font-size: 22px; font-weight: 700; color: var(--white); margin-bottom: 6px; }
+  .gate-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; line-height: 1.5; }
+  .gate-input {
+    width: 100%; padding: 12px 14px; border: 1.5px solid var(--navy-border);
+    border-radius: 10px; font-size: 15px; background: var(--navy-light);
+    color: var(--white); outline: none; margin-bottom: 12px;
+    transition: border-color 0.15s;
+  }
+  .gate-input:focus { border-color: var(--accent); }
+  .gate-input::placeholder { color: var(--text-muted); }
+  .gate-btn {
+    width: 100%; padding: 12px; background: var(--accent); border: none;
+    color: var(--white); border-radius: 10px; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .gate-btn:hover { background: var(--accent-soft); }
+  .gate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .gate-msg { font-size: 13px; margin-top: 10px; min-height: 18px; }
+  .gate-msg.error { color: #f07; }
+  .gate-msg.ok { color: #4caf50; }
+  .gate-msg.info { color: var(--text-muted); }
+
+  /* ── Access Banner ── */
+  #access-banner {
+    background: rgba(79,142,247,0.12); border-bottom: 1px solid rgba(79,142,247,0.25);
+    padding: 6px 20px; font-size: 12px; color: var(--accent);
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  }
+  #access-banner.hidden { display: none; }
+  .leave-btn {
+    margin-left: auto; background: transparent; border: 1px solid var(--accent);
+    color: var(--accent); border-radius: 6px; padding: 3px 10px; font-size: 11px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .leave-btn:hover { background: var(--accent); color: var(--white); }
 
   /* ── Header ── */
   header {
-    height: var(--header-h);
-    background: var(--navy);
-    display: flex;
-    align-items: center;
-    padding: 0 24px;
-    gap: 16px;
-    flex-shrink: 0;
+    height: var(--header-h); background: var(--navy); display: flex;
+    align-items: center; padding: 0 24px; gap: 16px; flex-shrink: 0;
     border-bottom: 1px solid var(--navy-border);
   }
-
-  .header-title {
-    color: var(--white);
-    font-size: 18px;
-    font-weight: 600;
-    letter-spacing: -0.3px;
-  }
-
-  .header-subtitle {
-    color: var(--text-muted);
-    font-size: 13px;
-    margin-top: 1px;
-  }
-
+  .header-title { color: var(--white); font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+  .header-subtitle { color: var(--text-muted); font-size: 13px; margin-top: 1px; }
   .header-spacer { flex: 1; }
-
-  .nav-btn {
-    background: var(--navy-light);
-    border: 1px solid var(--navy-border);
-    color: var(--white);
-    border-radius: 8px;
-    padding: 7px 14px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
+  .nav-btn { background: var(--navy-light); border: 1px solid var(--navy-border); color: var(--white); border-radius: 8px; padding: 7px 14px; font-size: 14px; cursor: pointer; transition: background 0.15s; }
   .nav-btn:hover { background: var(--accent-soft); }
-
-  .month-label {
-    color: var(--white);
-    font-size: 16px;
-    font-weight: 600;
-    min-width: 160px;
-    text-align: center;
-  }
-
-  .today-btn {
-    background: var(--accent);
-    border: none;
-    color: var(--white);
-    border-radius: 8px;
-    padding: 7px 16px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
+  .month-label { color: var(--white); font-size: 16px; font-weight: 600; min-width: 160px; text-align: center; }
+  .today-btn { background: var(--accent); border: none; color: var(--white); border-radius: 8px; padding: 7px 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
   .today-btn:hover { background: var(--accent-soft); }
-
-  .sync-btn {
-    background: transparent;
-    border: 1px solid var(--navy-border);
-    color: var(--text-muted);
-    border-radius: 8px;
-    padding: 7px 14px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.15s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
+  .sync-btn { background: transparent; border: 1px solid var(--navy-border); color: var(--text-muted); border-radius: 8px; padding: 7px 14px; font-size: 13px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
   .sync-btn:hover { border-color: var(--accent); color: var(--accent); }
   .sync-btn.spinning .sync-icon { animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* ── Invite Panel (owner only) ── */
+  .invite-panel {
+    background: var(--navy-mid); border-bottom: 1px solid var(--navy-border);
+    padding: 10px 20px; display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  }
+  .invite-panel.hidden { display: none; }
+  .invite-panel label { font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; }
+  .invite-input { flex: 1; padding: 7px 12px; border: 1px solid var(--navy-border); border-radius: 8px; background: var(--navy-light); color: var(--white); font-size: 13px; outline: none; }
+  .invite-input:focus { border-color: var(--accent); }
+  .invite-input::placeholder { color: var(--text-muted); }
+  .invite-send-btn { background: var(--accent); border: none; color: var(--white); border-radius: 8px; padding: 7px 16px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .invite-send-btn:hover { background: var(--accent-soft); }
+  .invite-msg { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .invite-msg.ok { color: #4caf50; }
+  .invite-msg.error { color: #f07; }
+
   /* ── Main layout ── */
-  .main {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-  }
-
-  /* ── Calendar grid ── */
-  .calendar-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    background: var(--white);
-  }
-
-  .day-headers {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    background: var(--off-white);
-    border-bottom: 1px solid #e8eaf0;
-    flex-shrink: 0;
-  }
-
-  .day-header {
-    padding: 10px 0;
-    text-align: center;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: repeat(6, 1fr);
-    flex: 1;
-    overflow: hidden;
-  }
-
-  .day-cell {
-    border-right: 1px solid #e8eaf0;
-    border-bottom: 1px solid #e8eaf0;
-    padding: 6px;
-    cursor: pointer;
-    transition: background 0.1s;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-height: 0;
-  }
-
+  .main { display: flex; flex: 1; overflow: hidden; }
+  .calendar-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--white); }
+  .day-headers { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--off-white); border-bottom: 1px solid #e8eaf0; flex-shrink: 0; }
+  .day-header { padding: 10px 0; text-align: center; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; color: var(--text-muted); text-transform: uppercase; }
+  .grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(6, 1fr); flex: 1; overflow: hidden; }
+  .day-cell { border-right: 1px solid #e8eaf0; border-bottom: 1px solid #e8eaf0; padding: 6px; cursor: pointer; transition: background 0.1s; overflow: hidden; display: flex; flex-direction: column; gap: 2px; min-height: 0; }
   .day-cell:hover { background: #f0f4ff; }
   .day-cell.other-month { opacity: 0.35; }
   .day-cell.selected { background: #ebf1ff; }
   .day-cell.today { background: #fffbeb; }
-
-  .day-number {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    width: 26px;
-    height: 26px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .day-cell.today .day-number {
-    background: var(--today-ring);
-    color: var(--navy);
-    font-weight: 700;
-  }
-
-  .day-cell.selected .day-number {
-    background: var(--accent);
-    color: var(--white);
-  }
-
-  .event-pip {
-    font-size: 10.5px;
-    padding: 1px 5px;
-    border-radius: 3px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: white;
-    font-weight: 500;
-    line-height: 16px;
-    cursor: pointer;
-  }
-
+  .day-number { font-size: 13px; font-weight: 500; color: var(--text-secondary); width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 50%; flex-shrink: 0; }
+  .day-cell.today .day-number { background: var(--today-ring); color: var(--navy); font-weight: 700; }
+  .day-cell.selected .day-number { background: var(--accent); color: var(--white); }
+  .event-pip { font-size: 10.5px; padding: 1px 5px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: white; font-weight: 500; line-height: 16px; cursor: pointer; }
   .pip-google { background: var(--event-google); }
   .pip-family { background: var(--event-family); }
   .pip-birthday { background: var(--event-birthday); color: #3a2000; }
   .pip-anniversary { background: var(--event-anniversary); }
   .pip-default { background: var(--text-muted); }
-
-  .more-events {
-    font-size: 10px;
-    color: var(--text-muted);
-    padding: 1px 4px;
-  }
+  .more-events { font-size: 10px; color: var(--text-muted); padding: 1px 4px; }
 
   /* ── Sidebar ── */
-  .sidebar {
-    width: var(--sidebar-w);
-    background: var(--navy);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    flex-shrink: 0;
-    border-left: 1px solid var(--navy-border);
-  }
-
-  .sidebar-date {
-    padding: 20px 20px 14px;
-    border-bottom: 1px solid var(--navy-border);
-    flex-shrink: 0;
-  }
-
-  .sidebar-date-label {
-    font-size: 13px;
-    color: var(--text-muted);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-  }
-
-  .sidebar-date-main {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--white);
-  }
-
-  .sidebar-legend {
-    padding: 12px 20px;
-    border-bottom: 1px solid var(--navy-border);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    flex-shrink: 0;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11px;
-    color: var(--text-muted);
-  }
-
-  .legend-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .sidebar-events {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px 16px;
-  }
-
+  .sidebar { width: var(--sidebar-w); background: var(--navy); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; border-left: 1px solid var(--navy-border); }
+  .sidebar-date { padding: 20px 20px 14px; border-bottom: 1px solid var(--navy-border); flex-shrink: 0; }
+  .sidebar-date-label { font-size: 13px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .sidebar-date-main { font-size: 22px; font-weight: 700; color: var(--white); }
+  .sidebar-legend { padding: 12px 20px; border-bottom: 1px solid var(--navy-border); display: flex; flex-wrap: wrap; gap: 8px; flex-shrink: 0; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .sidebar-events { flex: 1; overflow-y: auto; padding: 12px 16px; }
   .sidebar-events::-webkit-scrollbar { width: 4px; }
   .sidebar-events::-webkit-scrollbar-thumb { background: var(--navy-border); border-radius: 2px; }
-
-  .events-section-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    padding: 8px 4px 6px;
-  }
-
-  .event-card {
-    background: var(--navy-mid);
-    border: 1px solid var(--navy-border);
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    border-left: 3px solid var(--accent);
-    transition: background 0.15s;
-  }
+  .events-section-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); padding: 8px 4px 6px; }
+  .event-card { background: var(--navy-mid); border: 1px solid var(--navy-border); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; border-left: 3px solid var(--accent); transition: background 0.15s; }
   .event-card:hover { background: var(--navy-light); }
-
   .event-card.google { border-left-color: var(--event-google); }
   .event-card.family { border-left-color: var(--event-family); }
   .event-card.birthday { border-left-color: var(--event-birthday); }
   .event-card.anniversary { border-left-color: var(--event-anniversary); }
-
-  .event-time {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    margin-bottom: 3px;
-  }
-
-  .event-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--white);
-    line-height: 1.3;
-    margin-bottom: 2px;
-  }
-
-  .event-desc {
-    font-size: 12px;
-    color: var(--text-muted);
-    line-height: 1.5;
-    margin-top: 4px;
-  }
-
-  .event-desc a {
-    color: var(--accent);
-    text-decoration: none;
-  }
-
-  .event-source-tag {
-    display: inline-block;
-    font-size: 10px;
-    padding: 1px 6px;
-    border-radius: 3px;
-    margin-top: 6px;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-  }
-
+  .event-time { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px; }
+  .event-title { font-size: 14px; font-weight: 600; color: var(--white); line-height: 1.3; margin-bottom: 2px; }
+  .event-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-top: 4px; }
+  .event-desc a { color: var(--accent); text-decoration: none; }
+  .event-source-tag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 3px; margin-top: 6px; font-weight: 600; letter-spacing: 0.3px; }
   .tag-google { background: rgba(79,142,247,0.18); color: #6aa3f9; }
   .tag-family { background: rgba(224,90,122,0.18); color: #e87090; }
   .tag-birthday { background: rgba(247,169,79,0.18); color: #f7b86a; }
   .tag-anniversary { background: rgba(164,127,232,0.18); color: #b89ae8; }
-
-  .no-events {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-muted);
-    font-size: 14px;
-  }
-
-  .no-events-icon {
-    font-size: 36px;
-    margin-bottom: 10px;
-    opacity: 0.4;
-  }
+  .no-events { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; }
+  .no-events-icon { font-size: 36px; margin-bottom: 10px; opacity: 0.4; }
 
   /* ── Status bar ── */
-  .status-bar {
-    background: var(--navy);
-    border-top: 1px solid var(--navy-border);
-    padding: 6px 20px;
-    font-size: 11px;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-shrink: 0;
-  }
-
-  .status-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #4caf50;
-    flex-shrink: 0;
-  }
+  .status-bar { background: var(--navy); border-top: 1px solid var(--navy-border); padding: 6px 20px; font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #4caf50; flex-shrink: 0; }
   .status-dot.syncing { background: var(--today-ring); animation: pulse 1s ease-in-out infinite; }
   .status-dot.error { background: #f55; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-  /* ── Add event modal ── */
-  .modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(10,14,30,0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
-  }
+  /* ── Add Event Modal ── */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(10,14,30,0.7); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .modal-backdrop.open { opacity: 1; pointer-events: all; }
-
-  .modal {
-    background: var(--white);
-    border-radius: 16px;
-    padding: 28px;
-    width: 400px;
-    max-width: 90vw;
-    transform: translateY(12px);
-    transition: transform 0.2s;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.3);
-  }
+  .modal { background: var(--white); border-radius: 16px; padding: 28px; width: 400px; max-width: 90vw; transform: translateY(12px); transition: transform 0.2s; box-shadow: 0 24px 60px rgba(0,0,0,0.3); }
   .modal-backdrop.open .modal { transform: translateY(0); }
-
-  .modal h2 {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 20px;
-  }
-
+  .modal h2 { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; }
   .form-group { margin-bottom: 14px; }
-
-  .form-group label {
-    display: block;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin-bottom: 5px;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-  }
-
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1.5px solid #dde2ef;
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: inherit;
-    color: var(--text-primary);
-    outline: none;
-    transition: border-color 0.15s;
-    background: var(--off-white);
-  }
-
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    border-color: var(--accent);
-    background: var(--white);
-  }
-
+  .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 12px; border: 1.5px solid #dde2ef; border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--text-primary); outline: none; transition: border-color 0.15s; background: var(--off-white); }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); background: var(--white); }
   .form-group textarea { resize: vertical; min-height: 72px; }
-
-  .modal-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-    justify-content: flex-end;
-  }
-
-  .btn-cancel {
-    background: var(--off-white);
-    border: 1px solid #dde2ef;
-    color: var(--text-secondary);
-    border-radius: 8px;
-    padding: 9px 18px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-  }
-
-  .btn-save {
-    background: var(--accent);
-    border: none;
-    color: var(--white);
-    border-radius: 8px;
-    padding: 9px 20px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+  .btn-cancel { background: var(--off-white); border: 1px solid #dde2ef; color: var(--text-secondary); border-radius: 8px; padding: 9px 18px; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .btn-save { background: var(--accent); border: none; color: var(--white); border-radius: 8px; padding: 9px 20px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
   .btn-save:hover { background: var(--accent-soft); }
 
   @media (max-width: 700px) {
@@ -505,6 +185,32 @@
 </style>
 </head>
 <body>
+
+<!-- ── Access Gate ── -->
+<div id="gate">
+  <div class="gate-card">
+    <div class="gate-logo">📅</div>
+    <div class="gate-title">Sara's Calendar</div>
+    <div class="gate-sub">Family calendar — members only.<br>Enter your email to request access or use an invite link.</div>
+    <input class="gate-input" id="gate-email" type="email" placeholder="your@email.com" autocomplete="email">
+    <button class="gate-btn" id="gate-btn">Send me a magic link</button>
+    <div class="gate-msg" id="gate-msg"></div>
+  </div>
+</div>
+
+<!-- ── Access Banner (shown when logged in as guest) ── -->
+<div id="access-banner" class="hidden">
+  <span id="access-label">📅 Logged in</span>
+  <button class="leave-btn" id="leave-btn">Leave this calendar</button>
+</div>
+
+<!-- ── Invite Panel (owner only) ── -->
+<div class="invite-panel hidden" id="invite-panel">
+  <label>Invite:</label>
+  <input class="invite-input" id="invite-email" type="email" placeholder="friend@email.com">
+  <button class="invite-send-btn" id="invite-send-btn">Send Invite</button>
+  <span class="invite-msg" id="invite-msg"></span>
+</div>
 
 <header>
   <div>
@@ -525,17 +231,13 @@
 <div class="main">
   <div class="calendar-area">
     <div class="day-headers">
-      <div class="day-header">Sun</div>
-      <div class="day-header">Mon</div>
-      <div class="day-header">Tue</div>
-      <div class="day-header">Wed</div>
-      <div class="day-header">Thu</div>
-      <div class="day-header">Fri</div>
+      <div class="day-header">Sun</div><div class="day-header">Mon</div>
+      <div class="day-header">Tue</div><div class="day-header">Wed</div>
+      <div class="day-header">Thu</div><div class="day-header">Fri</div>
       <div class="day-header">Sat</div>
     </div>
     <div class="grid" id="grid"></div>
   </div>
-
   <div class="sidebar">
     <div class="sidebar-date">
       <div class="sidebar-date-label" id="sidebarDayLabel">Today</div>
@@ -560,30 +262,17 @@
 <div class="modal-backdrop" id="modalBackdrop">
   <div class="modal">
     <h2>Add Event</h2>
-    <div class="form-group">
-      <label>Title</label>
-      <input type="text" id="evtTitle" placeholder="Event name">
-    </div>
-    <div class="form-group">
-      <label>Date</label>
-      <input type="date" id="evtDate">
-    </div>
-    <div class="form-group">
-      <label>Time (optional)</label>
-      <input type="time" id="evtTime">
-    </div>
-    <div class="form-group">
-      <label>Type</label>
+    <div class="form-group"><label>Title</label><input type="text" id="evtTitle" placeholder="Event name"></div>
+    <div class="form-group"><label>Date</label><input type="date" id="evtDate"></div>
+    <div class="form-group"><label>Time (optional)</label><input type="time" id="evtTime"></div>
+    <div class="form-group"><label>Type</label>
       <select id="evtType">
         <option value="family">Family Event</option>
         <option value="birthday">Birthday</option>
         <option value="anniversary">Anniversary</option>
       </select>
     </div>
-    <div class="form-group">
-      <label>Notes</label>
-      <textarea id="evtNotes" placeholder="Optional description…"></textarea>
-    </div>
+    <div class="form-group"><label>Notes</label><textarea id="evtNotes" placeholder="Optional description…"></textarea></div>
     <div class="modal-actions">
       <button class="btn-cancel" id="modalCancel">Cancel</button>
       <button class="btn-save" id="modalSave">Save Event</button>
@@ -594,23 +283,32 @@
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, doc, getDoc, setDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// ── Config ── replace with Sara's Firebase project values
+// ── CONFIG — replace with Sara's Firebase values ──
 const FIREBASE_CONFIG = {
-  apiKey:            "REPLACE_API_KEY",
-  authDomain:        "REPLACE_PROJECT_ID.firebaseapp.com",
-  projectId:         "REPLACE_PROJECT_ID",
-  storageBucket:     "REPLACE_PROJECT_ID.appspot.com",
-  messagingSenderId: "REPLACE_SENDER_ID",
-  appId:             "REPLACE_APP_ID"
+  apiKey:            "AIzaSyDLl9RbMyu_-QK78f0x6HP3AdQcKThFQgU",
+  authDomain:        "parbtani-khandan-calenda-9e7dd.firebaseapp.com",
+  projectId:         "parbtani-khandan-calenda-9e7dd",
+  storageBucket:     "parbtani-khandan-calenda-9e7dd.appspot.com",
+  messagingSenderId: "984569082803",
+  appId:             "1:984569082803:web:72f6b7b2f9d054537bd1c6"
 };
 
 const GOOGLE_CAL_API_KEY = "REPLACE_GOOGLE_API_KEY"; // optional
 const GOOGLE_CAL_IDS     = [];                        // add calendar IDs here
 
-const USE_FIREBASE    = FIREBASE_CONFIG.apiKey !== "REPLACE_API_KEY";
-const USE_GOOGLE_CAL  = GOOGLE_CAL_API_KEY !== "REPLACE_GOOGLE_API_KEY" && GOOGLE_CAL_IDS.length > 0;
+const SITE_URL    = "https://sara-cal.venzaura.com";
+const OWNER_EMAIL = "ayaz.parbtani@gmail.com";
+
+// Optional: EmailJS config for actual email delivery
+const EMAILJS_SERVICE  = "REPLACE_EMAILJS_SERVICE";
+const EMAILJS_TEMPLATE = "REPLACE_EMAILJS_TEMPLATE";
+const EMAILJS_KEY      = "REPLACE_EMAILJS_PUBLIC_KEY";
+
+const USE_FIREBASE   = FIREBASE_CONFIG.apiKey !== "AIzaSyDLl9RbMyu_-QK78f0x6HP3AdQcKThFQgU";
+const USE_GOOGLE_CAL = GOOGLE_CAL_API_KEY !== "REPLACE_GOOGLE_API_KEY" && GOOGLE_CAL_IDS.length > 0;
+const USE_EMAILJS    = EMAILJS_SERVICE !== "REPLACE_EMAILJS_SERVICE";
 
 let app, db;
 if (USE_FIREBASE) {
@@ -619,140 +317,365 @@ if (USE_FIREBASE) {
 }
 
 // ── State ──
-const today    = new Date();
-let   curYear  = today.getFullYear();
-let   curMonth = today.getMonth();
-let   selDate  = toKey(today);
-let   allEvents = [];
+const today     = new Date();
+let curYear     = today.getFullYear();
+let curMonth    = today.getMonth();
+let selDate     = toKey(today);
+let allEvents   = [];
+let currentUser = null; // { email, isOwner }
 
+// ── Utilities ──
 function toKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function todayKey() { return toKey(today); }
 function fmtMonthYear(y, m) { return new Date(y, m, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); }
-function pipClass(t) { return t==='birthday'?'pip-birthday':t==='anniversary'?'pip-anniversary':t==='google'?'pip-google':t==='family'?'pip-family':'default'; }
+function pipClass(t) { return t==='birthday'?'pip-birthday':t==='anniversary'?'pip-anniversary':t==='google'?'pip-google':t==='family'?'pip-family':'pip-default'; }
 function cardClass(t) { return t||'google'; }
 function tagClass(t) { return `tag-${t||'google'}`; }
-function tagLabel(t) { return {google:'Google Cal',family:'Family',birthday='Birthday <br>',anniversary:'Anniversary'}[t]||t; }
-function linkify(x) { return x?x.replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank">$1</a>'):''; }
-function setStatus(m,s='ok') { document.getElementById('statusText').textContent=m; document.getElementById('statusDot').className='status-dot'+(s==='syncing'?' syncing':s==='error'?' error':'')~
+function tagLabel(t) { return {google:'Google Cal',family:'Family',birthday:'Birthday 🎂',anniversary:'Anniversary 💝'}[t]||t; }
+function linkify(x) { return x?x.replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>'):''; }
+function setStatus(m, s='ok') {
+  document.getElementById('statusText').textContent = m;
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot'+(s==='syncing'?' syncing':s==='error'?' error':'');
+}
+function genToken() {
+  return [...crypto.getRandomValues(new Uint8Array(18))].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
 
+// ── Auth / Session ──
+function loadSession() {
+  try { return JSON.parse(localStorage.getItem('sara_cal_session')); } catch { return null; }
+}
+function saveSession(email, token) {
+  localStorage.setItem('sara_cal_session', JSON.stringify({ email, token, ts: Date.now() }));
+}
+function clearSession() { localStorage.removeItem('sara_cal_session'); }
+
+async function verifySession(session) {
+  if (!session || !USE_FIREBASE) return null;
+  if (Date.now() - session.ts > 30 * 24 * 60 * 60 * 1000) { clearSession(); return null; }
+  try {
+    const snap = await getDoc(doc(db, 'members', session.email));
+    if (snap.exists()) return { email: session.email, isOwner: session.email === OWNER_EMAIL };
+    clearSession(); return null;
+  } catch { return null; }
+}
+
+async function acceptInvite(token) {
+  if (!USE_FIREBASE) return false;
+  try {
+    const q = query(collection(db, 'invites'), where('token', '==', token), where('used', '==', false));
+    const snap = await getDocs(q);
+    if (snap.empty) return false;
+    const invDoc = snap.docs[0];
+    const email = invDoc.data().email;
+    await setDoc(doc(db, 'members', email), { email, joinedAt: new Date().toISOString(), role: 'member' });
+    await setDoc(doc(db, 'invites', invDoc.id), { ...invDoc.data(), used: true, usedAt: new Date().toISOString() });
+    saveSession(email, token);
+    return { email };
+  } catch (e) { console.error('[acceptInvite]', e); return false; }
+}
+
+async function acceptLoginToken(token) {
+  if (!USE_FIREBASE) return false;
+  try {
+    const q = query(collection(db, 'login_tokens'), where('token', '==', token), where('used', '==', false));
+    const snap = await getDocs(q);
+    if (snap.empty) return false;
+    const tDoc = snap.docs[0];
+    const email = tDoc.data().email;
+    const memberSnap = await getDoc(doc(db, 'members', email));
+    if (!memberSnap.exists()) return false;
+    await setDoc(doc(db, 'login_tokens', tDoc.id), { ...tDoc.data(), used: true, usedAt: new Date().toISOString() });
+    saveSession(email, token);
+    return { email };
+  } catch (e) { console.error('[acceptLoginToken]', e); return false; }
+}
+
+async function sendMagicLink(email, type) {
+  const token = genToken();
+  const link  = `${SITE_URL}?${type}=${token}`;
+  const subject = type === 'invite'
+    ? "You're invited to Sara's Family Calendar 📅"
+    : "Your magic link to Sara's Calendar 📅";
+  const message = type === 'invite'
+    ? `You've been invited to join Sara's family calendar! Click the link below to accept:\n\n${link}\n\nThis link works once.`
+    : `Here's your magic link to access Sara's Calendar:\n\n${link}\n\nThis link works once and expires when used.`;
+
+  if (USE_FIREBASE) {
+    const col = type === 'invite' ? 'invites' : 'login_tokens';
+    await setDoc(doc(db, col, token), {
+      email, token, createdAt: new Date().toISOString(),
+      used: false, ...(type === 'invite' ? { invitedBy: OWNER_EMAIL } : {})
+    });
+  }
+
+  if (USE_EMAILJS) {
+    try {
+      const { init, send } = await import('https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js');
+      init(EMAILJS_KEY);
+      await send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, { to_email: email, subject, message, magic_link: link });
+      return { sent: true, link };
+    } catch (e) { console.error('[EmailJS]', e); }
+  }
+  // Fallback: show link in console + status bar
+  console.log(`%c[Magic Link for ${email}]\n${link}`, 'color:#4f8ef7;font-size:13px');
+  return { sent: false, link };
+}
+
+// ── Gate UI ──
+async function showGate() {
+  document.getElementById('gate').classList.remove('hidden');
+  document.getElementById('gate-email').focus();
+}
+function hideGate() { document.getElementById('gate').classList.add('hidden'); }
+
+document.getElementById('gate-btn').addEventListener('click', async () => {
+  const email = document.getElementById('gate-email').value.trim().toLowerCase();
+  const msgEl = document.getElementById('gate-msg');
+  if (!email || !email.includes('@')) { msgEl.textContent = 'Please enter a valid email.'; msgEl.className = 'gate-msg error'; return; }
+  const btn = document.getElementById('gate-btn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  msgEl.textContent = 'Checking…'; msgEl.className = 'gate-msg info';
+
+  if (!USE_FIREBASE) {
+    msgEl.textContent = 'Firebase not configured yet. Ask the calendar owner for access.';
+    msgEl.className = 'gate-msg error'; btn.disabled = false; btn.textContent = 'Send me a magic link'; return;
+  }
+
+  // Check if already a member → send login link; else tell them to request invite
+  const memberSnap = await getDoc(doc(db, 'members', email));
+  if (memberSnap.exists()) {
+    const { sent, link } = await sendMagicLink(email, 'login');
+    if (sent) {
+      msgEl.textContent = `Magic link sent to ${email}! Check your inbox.`;
+    } else {
+      msgEl.textContent = `Link generated — check the browser console (Ctrl+Shift+I).`;
+      setStatus(`Magic link for ${email}: ${link}`);
+    }
+    msgEl.className = 'gate-msg ok';
+  } else {
+    msgEl.textContent = "You're not on the member list yet. Ask the calendar owner to send you an invite.";
+    msgEl.className = 'gate-msg error';
+  }
+  btn.disabled = false; btn.textContent = 'Send me a magic link';
+});
+
+document.getElementById('gate-email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('gate-btn').click();
+});
+
+// ── Leave Calendar ──
+document.getElementById('leave-btn').addEventListener('click', async () => {
+  if (!currentUser) return;
+  if (!confirm(`Leave Sara's Calendar? You'll need a new invite link to rejoin.`)) return;
+  if (USE_FIREBASE && currentUser.email !== OWNER_EMAIL) {
+    try { await deleteDoc(doc(db, 'members', currentUser.email)); } catch {}
+  }
+  clearSession();
+  location.reload();
+});
+
+// ── Invite Panel ──
+document.getElementById('invite-send-btn').addEventListener('click', async () => {
+  const email = document.getElementById('invite-email').value.trim().toLowerCase();
+  const msgEl = document.getElementById('invite-msg');
+  if (!email || !email.includes('@')) { msgEl.textContent = 'Enter a valid email.'; msgEl.className = 'invite-msg error'; return; }
+  msgEl.textContent = 'Sending…'; msgEl.className = 'invite-msg';
+  const { sent, link } = await sendMagicLink(email, 'invite');
+  document.getElementById('invite-email').value = '';
+  if (sent) {
+    msgEl.textContent = `✓ Invite sent to ${email}`;
+  } else {
+    msgEl.textContent = `✓ Link in console for ${email}`;
+    setStatus(`Invite link for ${email}: ${link}`);
+  }
+  msgEl.className = 'invite-msg ok';
+  setTimeout(() => { msgEl.textContent = ''; }, 6000);
+});
+
+// ── Init: check URL tokens and session ──
+async function init() {
+  const params = new URLSearchParams(location.search);
+  const inviteToken = params.get('invite');
+  const loginToken  = params.get('login');
+
+  // Clean URL
+  if (inviteToken || loginToken) history.replaceState({}, '', location.pathname);
+
+  setStatus('Checking access…', 'syncing');
+
+  if (inviteToken) {
+    setStatus('Accepting invite…', 'syncing');
+    const result = await acceptInvite(inviteToken);
+    if (result) { currentUser = { email: result.email, isOwner: result.email === OWNER_EMAIL }; }
+    else { setStatus('Invite link invalid or already used.', 'error'); showGate(); return; }
+  } else if (loginToken) {
+    setStatus('Signing in…', 'syncing');
+    const result = await acceptLoginToken(loginToken);
+    if (result) { currentUser = { email: result.email, isOwner: result.email === OWNER_EMAIL }; }
+    else { setStatus('Login link invalid or already used.', 'error'); showGate(); return; }
+  } else {
+    // Check existing session
+    const session = loadSession();
+    if (session) {
+      const verified = await verifySession(session);
+      if (verified) { currentUser = verified; }
+      else { showGate(); return; }
+    } else if (!USE_FIREBASE) {
+      // No Firebase yet — let through for setup
+      currentUser = { email: OWNER_EMAIL, isOwner: true };
+    } else {
+      showGate(); return;
+    }
+  }
+
+  // Logged in
+  hideGate();
+
+  if (currentUser.isOwner) {
+    document.getElementById('invite-panel').classList.remove('hidden');
+  } else {
+    document.getElementById('access-banner').classList.remove('hidden');
+    document.getElementById('access-label').textContent = `📅 Logged in as ${currentUser.email}`;
+  }
+
+  renderGrid();
+  renderSidebar(selDate);
+  document.getElementById('headerSub').textContent = 'Double-click any day to add an event';
+  await syncAll();
+}
+
+// ── Firebase fetch ──
 async function fetchFirebase() {
   if (!USE_FIREBASE) return [];
   const evts = [];
   try {
-    const snap = await getDocs(collection(db,'family-events'));
-    snap.forEach(doc => {
-      const d=doc.data();
-      const mo=String(d.month).padStart(2,'0'),da=String(d.day).padStart(2,'0');
-      const years=d.recurring?[today.getFullYear()-1,today.getFullYear(),today.getFullYear()+1]:[d.year||today.getFullYear()];
-      for(const y of years) evts.push({date:`${y}-${mo}-${da}`,title:d.title||d.name||'Event',type:d.type||'family'time:d.time||null,desc:d.description||d.notes||'',source:'firebase'});
+    const snap = await getDocs(collection(db, 'family-events'));
+    snap.forEach(d => {
+      const data = d.data();
+      const mo = String(data.month).padStart(2,'0'), da = String(data.day).padStart(2,'0');
+      const years = data.recurring ? [today.getFullYear()-1, today.getFullYear(), today.getFullYear()+1] : [data.year||today.getFullYear()];
+      for (const y of years) evts.push({ date:`${y}-${mo}-${da}`, title:data.title||data.name||'Event', type:data.type||'family', time:data.time||null, desc:data.description||data.notes||'', source:'firebase' });
     });
-  } catch(e) { console.error('[FB]',e); }
+  } catch(e) { console.error('[Firebase]', e); }
   return evts;
 }
 
+// ── Google Calendar fetch ──
 async function fetchGoogleCal() {
   if (!USE_GOOGLE_CAL) return [];
-  const evts=[],now=new Date();
-  const tMin=new Date(now.getFullYear()-1,0,1).toISOString(),tMax=new Date(now.getFullYear()+2,0,1).toISOString();
-  for(const id of GOOGLE_CAL_IDS) {
+  const evts = [], now = new Date();
+  const tMin = new Date(now.getFullYear()-1,0,1).toISOString(), tMax = new Date(now.getFullYear()+2,0,1).toISOString();
+  for (const id of GOOGLE_CAL_IDS) {
     try {
-      const r=await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(id)}/events?key=${GOOGLE_CAL_API_KEY}&timeMin=${tMin}&timeMax=${tMax}&singleEvents=true&maxResults=500`);
-      if(!r.ok) continue;
-      const j=await r.json();
-      (j.items||[]).forEach(item=>{
-        if(!item.start)return;
-        const raw=item.start.dateTime||item.start.date||'',date=raw.substring(0,10);
-        let time=null;
-        if(item.start.dateTime) time=new Date(item.start.dateTime).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
-        evts.push({date,title:item.summary||'Event',type:'google',time,desc:item.description||'',source:'google'});
+      const r = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(id)}/events?key=${GOOGLE_CAL_API_KEY}&timeMin=${tMin}&timeMax=${tMax}&singleEvents=true&maxResults=500`);
+      if (!r.ok) continue;
+      const j = await r.json();
+      (j.items||[]).forEach(item => {
+        if (!item.start) return;
+        const raw = item.start.dateTime||item.start.date||'', date = raw.substring(0,10);
+        let time = null;
+        if (item.start.dateTime) time = new Date(item.start.dateTime).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
+        evts.push({ date, title:item.summary||'Event', type:'google', time, desc:item.description||'', source:'google' });
       });
-    } catch(e) { console.error('[GC]',id,e); }
+    } catch(e) { console.error('[GCal]', id, e); }
   }
   return evts;
 }
 
+// ── Sync ──
 async function syncAll() {
-  setStatus('Syncing…','syncing');
+  setStatus('Syncing…', 'syncing');
   document.getElementById('syncBtn').classList.add('spinning');
   try {
-    const [fb,gc]=await Promise.all([fetchFirebase(),fetchGoogleCal()]);
-    allEvents=[...fb,...gc];
-    allEvents.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
-    renderGrid();renderSidebar(selDate);
-    const src=[USE_FIREBASE?'Firebase':null,USE_GOOGLE_CAL?'Google Cal':null].filter(Boolean);
-    const now=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    setStatus(src.length?`Synced from ${src.join(' + ')} · ${now}`:`${allEvents.length} events · ${now}`);
-    document.getElementById('headerSub').textContent=`${allEvents.length} events loaded · last sync ${now}`;
-  } catch(e) { setStatus('Sync error','error');console.error(e); }
+    const [fb, gc] = await Promise.all([fetchFirebase(), fetchGoogleCal()]);
+    allEvents = [...fb, ...gc];
+    allEvents.sort((a,b) => a.date<b.date?-1:a.date>b.date?1:0);
+    renderGrid(); renderSidebar(selDate);
+    const src = [USE_FIREBASE?'Firebase':null, USE_GOOGLE_CAL?'Google Cal':null].filter(Boolean);
+    const now = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    setStatus(src.length ? `Synced from ${src.join(' + ')} · ${now}` : `${allEvents.length} events · ${now}`);
+    document.getElementById('headerSub').textContent = `${allEvents.length} events loaded · last sync ${now}`;
+  } catch(e) { setStatus('Sync error — check console', 'error'); console.error(e); }
   document.getElementById('syncBtn').classList.remove('spinning');
 }
 
+// ── Grid render ──
 function renderGrid() {
-  const grid=document.getElementById('grid');
-  document.getElementById('monthLabel').textContent=fmtMonthYear(curYear,curMonth);
-  grid.innerHTML='';
-  const first=new Date(curYear,curMonth,1),start=new Date(first);
-  start.setDate(start.getDate()-first.getDay());
-  const byDate={};allEvents.forEach(e=>{(byDate[e.date]=byDate[e.date]||[]).push(e);});
-  const tKey=todayKey();
-  for(let i=0;i<42;i++) {
-    const d=new Date(start);d.setDate(start.getDate()+i);
-    const dKey=toKey(d),cell=document.createElement('div'),
-          evts=byDate[dKey]||[],otherM=d.getMonth()!==curMonth;
-    cell.className='day-cell'+(otherM?' other-month':'')+(dKey===tKey?' today':'')+(dKey===selDate?' selected':'');
-    const num=document.createElement('div');num.className='day-number';num.textContent=d.getDate();cell.appendChild(num);
-    evts.slice(0,3).forEach(e=>{const p=document.createElement('div');p.className=`event-pip ${pipClass(e.type)}`;p.textContent=e.title;cell.appendChild(p);});
-    if(evts.length>3){const m=document.createElement('div');m.className='more-events';m.textContent=`+${evts.length-3} more`;cell.appendChild(m);}
-    cell.addEventListener('click',()=>{selDate=dKey;renderGrid();renderSidebar(dKey);if(otherM){curYear=d.getFullYear();curMonth=d.getMonth();renderGrid();}});
+  const grid = document.getElementById('grid');
+  document.getElementById('monthLabel').textContent = fmtMonthYear(curYear, curMonth);
+  grid.innerHTML = '';
+  const first = new Date(curYear, curMonth, 1), start = new Date(first);
+  start.setDate(start.getDate() - first.getDay());
+  const byDate = {};
+  allEvents.forEach(e => { (byDate[e.date]=byDate[e.date]||[]).push(e); });
+  const tKey = todayKey();
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(start); d.setDate(start.getDate()+i);
+    const dKey = toKey(d), evts = byDate[dKey]||[], otherM = d.getMonth()!==curMonth;
+    const cell = document.createElement('div');
+    cell.className = 'day-cell'+(otherM?' other-month':'')+(dKey===tKey?' today':'')+(dKey===selDate?' selected':'');
+    const num = document.createElement('div'); num.className='day-number'; num.textContent=d.getDate(); cell.appendChild(num);
+    evts.slice(0,3).forEach(e => { const p=document.createElement('div'); p.className=`event-pip ${pipClass(e.type)}`; p.textContent=e.title; cell.appendChild(p); });
+    if (evts.length>3) { const m=document.createElement('div'); m.className='more-events'; m.textContent=`+${evts.length-3} more`; cell.appendChild(m); }
+    cell.addEventListener('click', () => { selDate=dKey; renderGrid(); renderSidebar(dKey); if(otherM){curYear=d.getFullYear();curMonth=d.getMonth();renderGrid();} });
     grid.appendChild(cell);
   }
 }
 
+// ── Sidebar render ──
 function renderSidebar(dateKey) {
-  const [y,m,day]=dateKey.split('-').map(Number),sib=document.getElementById('sidebarEvents');
-  const d=new Date(y,m-1,day);
-  document.getElementById('sidebarDayLabel').textContent=dateKey===todayKey()?'Today':d.toLocaleDateString('en-US',{weekday:'long'});
-  document.getElementById('sidebarDateMain').textContent=d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  const dayEvts=allEvents.filter(e=>e.date===dateKey);sib.innerHTML='';
-  if(!dayEvts.length){sib.innerHTML<`<div class="no-events"><div class="no-events-icon">📅</div>No events</div>`;return;}
-  const sch=dayEvts.filter(e=>e.time),ad=dayEvts.filter(e=>!e.time);
-  if(sch.length){const l=document.createElement('div');l.className='events-section-label';l.textContent='Scheduled';sib.appendChild(l);sch.forEach(e=>sib.appendChild(makeCard(e)));}
-  if(ad.length){const l=document.createElement('div');l.className='events-section-label';l.textContent='All Day';sib.appendChild(l);ad.forEach(e=>sib.appendChild(makeCard(e)));}
+  const [y,m,day] = dateKey.split('-').map(Number);
+  const d = new Date(y,m-1,day);
+  document.getElementById('sidebarDayLabel').textContent = dateKey===todayKey()?'Today':d.toLocaleDateString('en-US',{weekday:'long'});
+  document.getElementById('sidebarDateMain').textContent = d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const sib = document.getElementById('sidebarEvents');
+  const dayEvts = allEvents.filter(e=>e.date===dateKey);
+  sib.innerHTML = '';
+  if (!dayEvts.length) { sib.innerHTML=`<div class="no-events"><div class="no-events-icon">📅</div>No events</div>`; return; }
+  const sch = dayEvts.filter(e=>e.time), ad = dayEvts.filter(e=>!e.time);
+  if (sch.length) { const l=document.createElement('div'); l.className='events-section-label'; l.textContent='Scheduled'; sib.appendChild(l); sch.forEach(e=>sib.appendChild(makeCard(e))); }
+  if (ad.length)  { const l=document.createElement('div'); l.className='events-section-label'; l.textContent='All Day';   sib.appendChild(l); ad.forEach(e=>sib.appendChild(makeCard(e))); }
 }
 
 function makeCard(e) {
-  const c=document.createElement('div');c.className=`event-card ${cardClass(e.type)}`;
-  c.innerHTML=`${e.time?`<div class="event-time">${e.time}</div>`:''}<div class="event-title">${e.title}</div>${e.desc?`<div class="event-desc">${linkify(e.desc)}</div>`:''}<span class="event-source-tag ${tagClass(e.type)}">${tagLabel(e.type)}</span>`;return c;
+  const c = document.createElement('div'); c.className=`event-card ${cardClass(e.type)}`;
+  c.innerHTML=`${e.time?`<div class="event-time">${e.time}</div>`:''}<div class="event-title">${e.title}</div>${e.desc?`<div class="event-desc">${linkify(e.desc)}</div>`:''}<span class="event-source-tag ${tagClass(e.type)}">${tagLabel(e.type)}</span>`;
+  return c;
 }
 
-aryync function saveEvent() {
-  const title=document.getElementById('evtTitle').value.trim(),date=document.getElementById('evtDate').value;
-  if(!title||!date)return;
-  const [yr,mo,da]=date.split('-').map(Number),type=document.getElementById('evtType').value,
-    time=document.getElementById('evtTime').value||null,notes=document.getElementById('evtNotes').value.trim();
-  if(USE_FIREBASE) { try { await addDoc(collection(db,'family-events'),{title,type,day:da,month:mo,year:yr,time:time||null,description:notes,recurring:type==='birthday'||type==='anniversary'}); } catch(e) { console.error('[FB save]',e); } }
+// ── Add Event ──
+async function saveEvent() {
+  const title=document.getElementById('evtTitle').value.trim(), date=document.getElementById('evtDate').value;
+  if (!title||!date) return;
+  const [yr,mo,da]=date.split('-').map(Number), type=document.getElementById('evtType').value,
+        time=document.getElementById('evtTime').value||null, notes=document.getElementById('evtNotes').value.trim();
+  if (USE_FIREBASE) {
+    try { await addDoc(collection(db,'family-events'),{title,type,day:da,month:mo,year:yr,time:time||null,description:notes,recurring:(type==='birthday'||type==='anniversary')}); } catch(e){console.error('[FB save]',e);}
+  }
   allEvents.push({date,title,type,time,desc:notes,source:'firebase'});
   allEvents.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
-  closeModal();renderGrid();renderSidebar(selDate);
+  closeModal(); renderGrid(); renderSidebar(selDate);
 }
 
-function openModal(k) { document.getElementById('evtDate').value=k;document.getElementById('evtTitle').value='';document.getElementById('evtTime').value='';document.getElementById('evtNotes').value='';document.getElementById('modalBackdrop').classList.add('open');setTimeout(()=>document.getElementById('evtTitle').focus(),100);}
+function openModal(k) { document.getElementById('evtDate').value=k;document.getElementById('evtTitle').value='';document.getElementById('evtTime').value='';document.getElementById('evtNotes').value='';document.getElementById('modalBackdrop').classList.add('open');setTimeout(()=>document.getElementById('evtTitle').focus(),100); }
 function closeModal() { document.getElementById('modalBackdrop').classList.remove('open'); }
 
-document.getElementById('prevBtn').addEventListener('click',()=>{curMonth--;if(curMonth<0) {curMonth=11;curYear--;}renderGrid();});
+// ── Event Listeners ──
+document.getElementById('prevBtn').addEventListener('click',()=>{curMonth--;if(curMonth<0){curMonth=11;curYear--;}renderGrid();});
 document.getElementById('nextBtn').addEventListener('click',()=>{curMonth++;if(curMonth>11){curMonth=0;curYear++;}renderGrid();});
 document.getElementById('todayBtn').addEventListener('click',()=>{curYear=today.getFullYear();curMonth=today.getMonth();selDate=todayKey();renderGrid();renderSidebar(selDate);});
 document.getElementById('syncBtn').addEventListener('click',syncAll);
 document.getElementById('modalCancel').addEventListener('click',closeModal);
-document.getElementById('modalSave').addEventListener('click',()=>{saveEvent();});
+document.getElementById('modalSave').addEventListener('click',saveEvent);
 document.getElementById('modalBackdrop').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
 document.getElementById('grid').addEventListener('dblclick',e=>{const c=e.target.closest('.day-cell');if(c&&selDate)openModal(selDate);});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
-renderGrid();renderSidebar(selDate);
-document.getElementById('headerSub').textContent='Double-click any day to add an event';
-syncAll();
+
+init();
 </script>
 </body>
 </html>
